@@ -1,5 +1,13 @@
 # Milvus Vector Store
 
+## Local 설치
+
+```text
+docker pull milvusdb/milvus:latest
+docker run -d --name milvus_cpu -p 19530:19530 -p 19121:19121 milvusdb/milvus:latest
+```
+
+
 
 ## Reference 
 
