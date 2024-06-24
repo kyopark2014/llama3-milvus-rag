@@ -8,7 +8,7 @@
 
 8192 sequence length
 
-
+[SageMaker - Jina Embeding V2](https://us-west-2.console.aws.amazon.com/sagemaker/playground?region=us-west-2#/foundation-models/playground/prodview-5iljbegvoi66w)
 
 ## Reference 
 
