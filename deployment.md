@@ -70,11 +70,11 @@ cdk bootstrap aws://[account-id]/us-west-2
 cdk deploy --all
 ```
 
-인프라가 설치가 되면 아래와 같은 Output을 확인할 수 있습니다. 여기에서는 접속하는 URL인 WebUrlforllama3langchainkor로 알 수 있습니다.
+인프라가 설치가 되면 아래와 같은 Output을 확인할 수 있습니다. 여기에서는 접속하는 URL인 WebUrlforllama3rag로 알 수 있습니다.
 
 ![noname](https://github.com/kyopark2014/llama3-langchain-kor/assets/52392004/2a28c2ca-294f-4374-a099-da124d84e485)
 
-9) WebUrlforllama3langchainkor로 접속하여 "demo"라고 id를 넣고, "General Conversation"으로 입력후 Submit을 선택합니다. User Id로 대화이력이 저장되므로 여러명이 접속할 경우에는 다른 이름을 사용합니다.
+9) WebUrlforllama3rag로 접속하여 "demo"라고 id를 넣고, "General Conversation"으로 입력후 Submit을 선택합니다. User Id로 대화이력이 저장되므로 여러명이 접속할 경우에는 다른 이름을 사용합니다.
 
 ![image](https://github.com/kyopark2014/llama3-langchain-kor/assets/52392004/dfccc134-e731-41cb-b78a-d111ed742244)
 
