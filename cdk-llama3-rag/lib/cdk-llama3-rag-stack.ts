@@ -16,7 +16,7 @@ const region = process.env.CDK_DEFAULT_REGION;
 const accountId = process.env.CDK_DEFAULT_ACCOUNT;
 const debug = false;
 const stage = 'dev';
-const endpoint_name = 'jumpstart-dft-meta-textgeneration-llama-3-8b-instruct'
+const endpoint_name = 'meta-textgeneration-llama-3-8b-instruct'
 const s3_prefix = 'docs';
 const projectName = `llama3-rag`;  
 
