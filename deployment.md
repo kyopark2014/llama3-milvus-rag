@@ -47,7 +47,7 @@ git clone https://github.com/kyopark2014/llama3-langchain-kor
 5) cdk 폴더로 이동하여 필요한 라이브러리를 설치합니다.
 
 ```java
-cd llama3-langchain-kor/cdk-llama3-kor/ && npm install
+cd llama3-rag/cdk-llama3-rag/ && npm install
 ```
 
 7) CDK 사용을 위해 Boostraping을 수행합니다.
