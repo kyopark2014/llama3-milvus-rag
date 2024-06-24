@@ -41,7 +41,7 @@ chmod a+rx resize.sh && ./resize.sh 80
 4) 소스를 다운로드합니다.
 
 ```java
-git clone https://github.com/kyopark2014/llama3-langchain-kor
+git clone https://github.com/kyopark2014/llama3-rag
 ```
 
 5) cdk 폴더로 이동하여 필요한 라이브러리를 설치합니다.
