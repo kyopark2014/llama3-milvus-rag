@@ -14,30 +14,21 @@ Llama3가 설치가 되면 AWS CDK를 이용하여 필요한 인프라를 설치
 
 ### Jina Embeddinv v2
 
-[SageMaker - Jina Embeding V2](https://us-west-2.console.aws.amazon.com/sagemaker/playground?region=us-west-2#/foundation-models/playground/prodview-5iljbegvoi66w)에 접속한 후에 아래와 같이 [Open notebook in Studio]을 선택하여 SageMaker Studio를 실행합니다. 
+SageMaker에서 "Embedding"을 검색하면 아래와 같이 보여집니다. 여기서 "Embedding V2 Base"을 선택합니다.
 
-<img width="1331" alt="image" src="https://github.com/kyopark2014/llama3-rag/assets/52392004/271cc396-6793-4953-a98b-d1dea2442fed">
+![image](https://github.com/kyopark2014/llama3-rag/assets/52392004/0a8fdbc9-3ea0-4612-9964-eca9f159d163)
 
+그런데 아래와 같은 에러로 Jina Embedding V2를 사용할 수 없었습니다.
 
 ```text
-File /opt/conda/lib/python3.10/site-packages/botocore/client.py:565, in ClientCreator._create_api_method.<locals>._api_call(self, *args, **kwargs)
-    561     raise TypeError(
-    562         f"{py_operation_name}() only accepts keyword arguments."
-    563     )
-    564 # The "self" in this scope is referring to the BaseClient.
---> 565 return self._make_api_call(operation_name, kwargs)
-
-File /opt/conda/lib/python3.10/site-packages/botocore/client.py:1021, in BaseClient._make_api_call(self, operation_name, api_params)
-   1017     error_code = error_info.get("QueryErrorCode") or error_info.get(
-   1018         "Code"
-   1019     )
-   1020     error_class = self.exceptions.from_code(error_code)
--> 1021     raise error_class(parsed_response, operation_name)
-   1022 else:
-   1023     return parsed_response
-
 ClientError: An error occurred (ValidationException) when calling the DescribeModelPackage operation: ModelPackage arn:aws:sagemaker:us-west-2:594846645681:model-package/jina-embeddings-v2-base-en does not exist.
 ```
+
+따라서, "GPT-J 6B Embedding"을 검색하여 설지합니다.
+
+![image](https://github.com/kyopark2014/llama3-rag/assets/52392004/773b1de5-7dc4-4097-816b-33666b5d7acd)
+
+
 
 
 ## CDK를 이용한 인프라 설치하기
