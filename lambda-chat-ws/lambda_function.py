@@ -26,6 +26,9 @@ from langchain_community.llms import SagemakerEndpoint
 from langchain.chains import ConversationChain
 from langchain.prompts import PromptTemplate
 from langchain.chains.question_answering import load_qa_chain
+from langchain.embeddings.sagemaker_endpoint import EmbeddingsContentHandler
+from typing import Dict, List
+from langchain_community.embeddings import SagemakerEndpointEmbeddings
 
 s3 = boto3.client('s3')
 s3_bucket = os.environ.get('s3_bucket') # bucket name
@@ -37,6 +40,11 @@ doc_prefix = s3_prefix+'/'
 endpoint_name = os.environ.get('endpoint_name')
 
 aws_region = boto3.Session().region_name
+
+endpoint_embedding = 'jumpstart-dft-hf-textembedding-gpt-j-6b'
+
+embedding_type = 'sagemaker' # sagemaker or titan
+
 
 # websocket
 connection_url = os.environ.get('connection_url')
@@ -88,6 +96,59 @@ llm = initiate_LLM()
 
 map_chain = dict() 
 MSG_LENGTH = 100
+
+# embedding
+def get_embedding_using_sagemaker():
+    class ContentHandler2(EmbeddingsContentHandler):
+        content_type = "application/json"
+        accepts = "application/json"
+
+        def transform_input(self, inputs: List[str], model_kwargs: Dict) -> bytes:
+            input_str = json.dumps({"text_inputs": inputs, **model_kwargs})
+            return input_str.encode("utf-8")
+
+        def transform_output(self, output: bytes) -> List[List[float]]:
+            response_json = json.loads(output.read().decode("utf-8"))
+            return response_json["embedding"]
+
+    content_handler2 = ContentHandler2()
+    embeddings = SagemakerEndpointEmbeddings(
+        endpoint_name = endpoint_embedding,
+        region_name = aws_region,
+        content_handler = content_handler2,
+    )
+    return embeddings
+
+from langchain_community.embeddings import BedrockEmbeddings
+def get_embedding_using_bedrock():
+    titan_embedding_v2 = {
+        "bedrock_region": "us-west-2", 
+        "model_type": "titan",
+        "model_id": "amazon.titan-embed-text-v2:0"
+    }
+    
+    profile = titan_embedding_v2
+    bedrock_region =  profile['bedrock_region']
+    model_id = profile['model_id']
+    print(f'(Embedding) model_id: {model_id}, bedrock_region: {bedrock_region}')
+    
+    # bedrock   
+    boto3_bedrock = boto3.client(
+        service_name='bedrock-runtime',
+        region_name=bedrock_region,  
+        config=Config(
+            retries = {
+                'max_attempts': 30
+            }
+        )
+    )    
+    bedrock_embedding = BedrockEmbeddings(
+        client=boto3_bedrock,
+        region_name = bedrock_region,
+        model_id = model_id
+    )  
+    
+    return bedrock_embedding
 
 # load documents from s3 
 def load_document(file_type, s3_file_name):
@@ -146,7 +207,7 @@ def load_document(file_type, s3_file_name):
     ) 
 
     texts = text_splitter.split_text(new_contents) 
-                
+    
     return texts
 
 # load csv documents from s3
@@ -413,6 +474,65 @@ def general_conversation(query):
     
     return msg['text']
 
+def isKorean(text):
+    # check korean
+    pattern_hangul = re.compile('[\u3131-\u3163\uac00-\ud7a3]+')
+    word_kor = pattern_hangul.search(str(text))
+    # print('word_kor: ', word_kor)
+
+    if word_kor and word_kor != 'None':
+        print('Korean: ', word_kor)
+        return True
+    else:
+        print('Not Korean: ', word_kor)
+        return False
+
+def revise_question(query):    
+    if isKorean(query)==True :      
+        system = (
+            ""
+        )  
+        human = """이전 대화를 참조하여, 다음의 <question>의 뜻을 명확히 하는 새로운 질문을 한국어로 생성하세요. 새로운 질문은 원래 질문의 중요한 단어를 반드시 포함합니다. 결과는 <result> tag를 붙여주세요.
+        
+        <question>            
+        {question}
+        </question>"""
+        
+    else: 
+        system = (
+            ""
+        )
+        human = """Rephrase the follow up <question> to be a standalone question. Put it in <result> tags.
+        <question>            
+        {question}
+        </question>"""
+            
+    prompt = ChatPromptTemplate.from_messages([("system", system), MessagesPlaceholder(variable_name="history"), ("human", human)])
+    print('prompt: ', prompt)
+    
+    history = memory_chain.load_memory_variables({})["chat_history"]
+    print('memory_chain: ', history)
+
+    chain = prompt | llm
+    try: 
+        result = chain.invoke(
+            {
+                "history": history,
+                "question": query,
+            }
+        )
+        generated_question = result.content
+        print('generated_question: ', generated_question)
+        
+        revised_question = generated_question[generated_question.find('<result>')+8:len(generated_question)-9] # remove <result> tag                   
+        
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('error message: ', err_msg)                    
+        raise Exception ("Not able to request to LLM")
+    
+    return revised_question    
+
 def getResponse(connectionId, jsonBody):
     print('jsonBody: ', jsonBody)
     
@@ -429,7 +549,7 @@ def getResponse(connectionId, jsonBody):
     convType = jsonBody['convType']
     print('convType: ', convType)
     
-    global llm, memory_chain, map_chain
+    global llm, memory_chain, map_chain, vector_db
     global enableConversationMode  # debug
 
     # create memory
@@ -466,6 +586,13 @@ def getResponse(connectionId, jsonBody):
         else:            
             if convType == "normal":
                 msg = general_conversation(text)         
+            elif convType == "rag":
+                revised_question = revise_question(text)
+                print('revised_question: ', revised_question)
+                
+                relevant_docs = vector_db.as_retriever().get_relevant_documents(revised_question)
+                print('relevant_docs: ', relevant_docs)
+                msg = RAG(relevant_docs, text)
                        
                 print('msg: ', msg)         
             
@@ -505,7 +632,35 @@ def getResponse(connectionId, jsonBody):
                 )
             print('docs[0]: ', docs[0])    
             print('docs size: ', len(docs))
+            
+            docs = []
+            for i in range(len(texts)):
+                docs.append(
+                    Document(
+                        page_content=texts[i],
+                        metadata={
+                            'name': object,
+                            'page':i+1
+                        }
+                    )
+                )        
+            print('docs[0]: ', docs[0])    
+            print('docs size: ', len(docs))
+            
+            # insert knowledge store 
+            from langchain_milvus.vectorstores import Milvus           
+            
+            if embedding_type == 'sagemaker':
+                embeddings = get_embedding_using_sagemaker() 
+            else:  # bedrock titan v2
+                embeddings = get_embedding_using_bedrock()
+                
+            vector_db = Milvus.from_documents(
+                docs,
+                embeddings
+            )
 
+            # summay 
             contexts = []
             for doc in docs:
                 contexts.append(doc.page_content)
