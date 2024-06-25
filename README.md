@@ -2,7 +2,7 @@
 
 여기서는 Milvus knowledge store와 GPT-J embedding을 이용해 RAG를 구현합니다.
 
-![image](https://github.com/kyopark2014/llama3-rag/assets/52392004/33fbbd6d-b35e-44f3-abcb-a2ac968dd3a3)
+<img src="https://github.com/kyopark2014/llama3-rag/assets/52392004/33fbbd6d-b35e-44f3-abcb-a2ac968dd3a3" width="800">
 
 ## Milvus Vectore Store
 
