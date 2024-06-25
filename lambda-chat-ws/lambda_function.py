@@ -521,7 +521,7 @@ def revise_question(query):
                 "question": query,
             }
         )
-        generated_question = result.content
+        generated_question = result
         print('generated_question: ', generated_question)
         
         revised_question = generated_question[generated_question.find('<result>')+8:len(generated_question)-9] # remove <result> tag                   
