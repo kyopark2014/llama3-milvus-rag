@@ -487,49 +487,36 @@ def isKorean(text):
         print('Not Korean: ', word_kor)
         return False
 
-def revise_question(query):    
+def revise_question(query):        
     if isKorean(query)==True :      
-        system = (
-            ""
-        )  
-        human = """이전 대화를 참조하여, 다음의 <question>의 뜻을 명확히 하는 새로운 질문을 한국어로 생성하세요. 새로운 질문은 원래 질문의 중요한 단어를 반드시 포함합니다. 
-        
-        <question>            
-        {question}
-        </question>"""
-        
-    else: 
-        system = (
-            ""
-        )
-        human = """Rephrase the follow up <question> to be a standalone question. Put it in <result> tags.
-        <question>            
-        {question}
-        </question>"""
-            
-    prompt = ChatPromptTemplate.from_messages([("system", system), MessagesPlaceholder(variable_name="history"), ("human", human)])
-    print('prompt: ', prompt)
+        prompt_template = """
+        <|begin_of_text|>
+            <|start_header_id|>system<|end_header_id|>\n\n이전 대화를 참조하여, 다음의 <question>의 뜻을 명확히 하는 새로운 질문을 한국어로 생성하세요. 새로운 질문은 원래 질문의 중요한 단어를 반드시 포함합니다. Always answer without emojis in Korean
+            History: {chat_history}<|eot_id|>
+            <|start_header_id|>user<|end_header_id|>\n\n"{text}"<|eot_id|>
+            <|start_header_id|>assistant<|end_header_id|>\n\n"""
+    else:
+        prompt_template = """
+        <|begin_of_text|>
+            <|start_header_id|>system<|end_header_id|>\n\nRephrase the follow up <question> to be a standalone question
+            History: {chat_history}<|eot_id|>
+            <|start_header_id|>user<|end_header_id|>\n\n"{text}"<|eot_id|>
+            <|start_header_id|>assistant<|end_header_id|>\n\n"""
+                        
+    PROMPT = PromptTemplate(
+        template=prompt_template, 
+        input_variables=["chat_history", "text"]
+    )
     
     history = memory_chain.load_memory_variables({})["chat_history"]
     print('memory_chain: ', history)
-
-    chain = prompt | llm
-    try: 
-        result = chain.invoke(
-            {
-                "history": history,
-                "question": query,
-            }
-        )
-        generated_question = result
-        print('generated_question: ', generated_question)
-        
-        revised_question = generated_question[generated_question.find('<result>')+8:len(generated_question)-9] # remove <result> tag                   
-        
-    except Exception:
-        err_msg = traceback.format_exc()
-        print('error message: ', err_msg)                    
-        raise Exception ("Not able to request to LLM")
+    
+    chat_history = get_chat_history(history)
+    print('chat_history: ', chat_history)
+    
+    llm_chain = LLMChain(llm=llm, prompt=PROMPT)
+    
+    revised_question = llm_chain({"text": query, "chat_history": chat_history}, return_only_outputs=True)
     
     return revised_question    
 
