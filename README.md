@@ -4,7 +4,7 @@
 
 <img src="https://github.com/kyopark2014/llama3-rag/assets/52392004/33fbbd6d-b35e-44f3-abcb-a2ac968dd3a3" width="800">
 
-## Milvus Vectore Store
+## Milvus Vector Store
 
 [milvus-vector-store.md](https://github.com/kyopark2014/llama3-milvus-jina/blob/main/milvus-vector-store.md)에서는 Milvus를 이용한 vector store에 대해 설명합니다.
 
