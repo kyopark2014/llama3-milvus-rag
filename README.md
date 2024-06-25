@@ -1,4 +1,6 @@
-# Llama3 RAG based on Milvus and Jina embedding
+# Llama3 RAG 
+
+여기서는 Milvus knowledge store와 GPT-J embedding을 이용해 RAG를 구현합니다.
 
 ## Milvus Vectore Store
 
@@ -8,7 +10,6 @@
 
 8192 sequence length
 
-[SageMaker - Jina Embeding V2](https://us-west-2.console.aws.amazon.com/sagemaker/playground?region=us-west-2#/foundation-models/playground/prodview-5iljbegvoi66w)
 
 ## Reference 
 
