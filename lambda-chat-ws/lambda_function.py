@@ -387,12 +387,13 @@ def load_chatHistory(userId, allowTime, chat_memory):
             chat_memory.save_context({"input": text}, {"output": msg})    
 
 def RAG(context, query):
-    prompt_template = """Use the following pieces of context to answer the question at the end.
+    """
+    prompt_template = Use the following pieces of context to answer the question at the end.
 
     {context}
 
     Question: {question}
-    Answer:"""   
+    Answer:
     
     PROMPT = PromptTemplate(
         template=prompt_template, 
@@ -410,6 +411,33 @@ def RAG(context, query):
     print('msg: ', msg)
     
     return msg
+    """
+
+    if isKorean(query)==True :      
+        prompt_template = """
+        <|begin_of_text|>
+            <|start_header_id|>system<|end_header_id|>\n\n다음 문맥을 사용하여 마지막 질문에 답하세요.  Always answer without emojis in Korean
+            {context}<|eot_id|>
+            <|start_header_id|>user<|end_header_id|>\n\n"{text}"<|eot_id|>
+            <|start_header_id|>assistant<|end_header_id|>\n\n"""
+    else:
+        prompt_template = """
+        <|begin_of_text|>
+            <|start_header_id|>system<|end_header_id|>\n\nUse the following pieces of context to answer the question at the end. 
+            {context}<|eot_id|>
+            <|start_header_id|>user<|end_header_id|>\n\n"{text}"<|eot_id|>
+            <|start_header_id|>assistant<|end_header_id|>\n\n"""
+                        
+    PROMPT = PromptTemplate(
+        template=prompt_template, 
+        input_variables=["context", "text"]
+    )
+    
+    llm_chain = LLMChain(llm=llm, prompt=PROMPT)
+    
+    revised_question = llm_chain({"context": context, "text": query}, return_only_outputs=True)
+    
+    return revised_question
 
 from langchain.chains.llm import LLMChain
 def general_question(query):
@@ -577,7 +605,7 @@ def getResponse(connectionId, jsonBody):
                 revised_question = revise_question(text)
                 print('revised_question: ', revised_question)
                 
-                relevant_docs = vector_db.as_retriever().get_relevant_documents(revised_question)
+                relevant_docs = vector_db.as_retriever().invoke(revised_question)
                 print('relevant_docs: ', relevant_docs)
                 msg = RAG(relevant_docs, text)
                        
