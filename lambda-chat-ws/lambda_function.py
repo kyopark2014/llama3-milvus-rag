@@ -572,7 +572,7 @@ def getResponse(connectionId, jsonBody):
     convType = jsonBody['convType']
     print('convType: ', convType)
     
-    global llm, memory_chain, map_chain, vector_db
+    global llm, memory_chain, map_chain, vector_db, isInitiated_vectorstore
     global enableConversationMode  # debug
 
     # create memory
