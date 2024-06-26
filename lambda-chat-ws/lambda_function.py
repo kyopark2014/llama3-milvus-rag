@@ -548,6 +548,7 @@ def revise_question(query):
     
     return revised_question    
 
+isInitiated_milvus = False
 def getResponse(connectionId, jsonBody):
     print('jsonBody: ', jsonBody)
     
@@ -599,7 +600,7 @@ def getResponse(connectionId, jsonBody):
             print('initiate the chat memory!')
             msg  = "The chat memory was intialized in this session."
         else:            
-            if convType == "normal":
+            if convType == "normal" or (convType == 'rag' and isInitiated_milvus==False):
                 msg = general_conversation(text)         
             elif convType == "rag":
                 revised_question = revise_question(text)
@@ -664,7 +665,7 @@ def getResponse(connectionId, jsonBody):
             
             # insert knowledge store 
             from langchain_milvus.vectorstores import Milvus  
-            URI = "./milvus_demo.db"         
+            URI = "./tmp/milvus_demo.db"         
             
             if embedding_type == 'sagemaker':
                 embeddings = get_embedding_using_sagemaker() 
@@ -676,6 +677,7 @@ def getResponse(connectionId, jsonBody):
                 embeddings,
                 connection_args={"uri": URI},
             )
+            isInitiated_milvus = True
 
             # summay 
             contexts = []
