@@ -44,8 +44,8 @@ aws_region = boto3.Session().region_name
 endpoint_embedding = 'jumpstart-dft-hf-textembedding-gpt-j-6b'
 
 embedding_type = 'sagemaker' # sagemaker or titan
-
-
+vectorstore_type = 'faiss' # faiss or milvus
+    
 # websocket
 connection_url = os.environ.get('connection_url')
 ws_client = boto3.client('apigatewaymanagementapi', endpoint_url=connection_url)
@@ -150,6 +150,12 @@ def get_embedding_using_bedrock():
     
     return bedrock_embedding
 
+# get embedding
+if embedding_type == 'sagemaker':
+    embeddings = get_embedding_using_sagemaker() 
+else:  # bedrock titan v2
+    embeddings = get_embedding_using_bedrock()
+    
 # load documents from s3 
 def load_document(file_type, s3_file_name):
     s3r = boto3.resource("s3")
@@ -548,7 +554,8 @@ def revise_question(query):
     
     return revised_question    
 
-isInitiated_milvus = False
+    
+isInitiated_vectorstore = False
 def getResponse(connectionId, jsonBody):
     print('jsonBody: ', jsonBody)
     
@@ -600,7 +607,7 @@ def getResponse(connectionId, jsonBody):
             print('initiate the chat memory!')
             msg  = "The chat memory was intialized in this session."
         else:            
-            if convType == "normal" or (convType == 'rag' and isInitiated_milvus==False):
+            if convType == "normal" or (convType == 'rag' and isInitiated_vectorstore==False):
                 msg = general_conversation(text)         
             elif convType == "rag":
                 revised_question = revise_question(text)
@@ -663,21 +670,25 @@ def getResponse(connectionId, jsonBody):
             print('docs[0]: ', docs[0])    
             print('docs size: ', len(docs))
             
-            # insert knowledge store 
-            from langchain_milvus.vectorstores import Milvus  
-            URI = "/tmp/milvus_demo.db"         
+            # add contents into vectorstore
+            if vectorstore_type == 'milvus':
+                # insert knowledge store 
+                from langchain_milvus.vectorstores import Milvus  
+                URI = "/tmp/milvus_demo.db"         
+                    
+                vector_db = Milvus.from_documents(
+                    docs,
+                    embeddings,
+                    connection_args={"uri": URI},
+                )
+            else:
+                from langchain_community.vectorstores.faiss import FAISS
+                vector_db = FAISS.from_documents(
+                    docs,
+                    embeddings
+                )
             
-            if embedding_type == 'sagemaker':
-                embeddings = get_embedding_using_sagemaker() 
-            else:  # bedrock titan v2
-                embeddings = get_embedding_using_bedrock()
-                
-            vector_db = Milvus.from_documents(
-                docs,
-                embeddings,
-                connection_args={"uri": URI},
-            )
-            isInitiated_milvus = True
+            isInitiated_vectorstore = True
 
             # summay 
             contexts = []
