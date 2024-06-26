@@ -609,12 +609,20 @@ def getResponse(connectionId, jsonBody):
         else:            
             if convType == "normal" or (convType == 'rag' and isInitiated_vectorstore==False):
                 msg = general_conversation(text)         
-            elif convType == "rag":
+            elif convType == "rag" and isInitiated_vectorstore==True:
                 revised_question = revise_question(text)
                 print('revised_question: ', revised_question)
                 
-                relevant_docs = vector_db.as_retriever().invoke(revised_question)
-                print('relevant_docs: ', relevant_docs)
+                if vectorstore_type == 'milvus':
+                    relevant_docs = vector_db.as_retriever().invoke(revised_question)
+                    print('relevant_docs: ', relevant_docs)
+                else:
+                    top_k = 4
+                    relevant_docs = vectorstore_confidence.similarity_search_with_score(
+                        query=revised_question,
+                        k=top_k
+                    )
+                    print('relevant_docs: ', relevant_docs)
                 msg = RAG(relevant_docs, text)
                        
                 print('msg: ', msg)         
