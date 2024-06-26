@@ -665,7 +665,7 @@ def getResponse(connectionId, jsonBody):
             
             # insert knowledge store 
             from langchain_milvus.vectorstores import Milvus  
-            URI = "./tmp/milvus_demo.db"         
+            URI = "/tmp/milvus_demo.db"         
             
             if embedding_type == 'sagemaker':
                 embeddings = get_embedding_using_sagemaker() 
