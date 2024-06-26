@@ -6,7 +6,7 @@
 
 ## Milvus Vector Store
 
-[What is Milvus?](https://milvus.io/blog/how-to-get-started-with-milvus.md)와 같이 Milvus는 텍스트, 이미지, 오디오를 위핸 오픈소스 벡터 데이터베이스로서 대용량의 비정형 데이터를 처리할 수 있습니다. 이것 high dimension을 가지는 데이터를 효과적으로 검색할 수  ㅣㅆ고 대규모의 데이터셋을 다루기 위해 scalability를 제공합니다. 
+[What is Milvus?](https://milvus.io/blog/how-to-get-started-with-milvus.md)와 같이 Milvus는 텍스트, 이미지, 오디오를 위핸 오픈소스 벡터 데이터베이스로서 대용량의 비정형 데이터를 처리할 수 있습니다. 이것 high dimension을 가지는 데이터를 효과적으로 검색할 수 있고, 대규모의 데이터셋을 다루기 위해 scalability를 제공합니다. 
 
 
 [milvus-vector-store.md](https://github.com/kyopark2014/llama3-milvus-jina/blob/main/milvus-vector-store.md)에서는 Milvus를 이용한 vector store에 대해 설명합니다.
