@@ -663,7 +663,8 @@ def getResponse(connectionId, jsonBody):
             print('docs size: ', len(docs))
             
             # insert knowledge store 
-            from langchain_milvus.vectorstores import Milvus           
+            from langchain_milvus.vectorstores import Milvus  
+            URI = "./milvus_demo.db"         
             
             if embedding_type == 'sagemaker':
                 embeddings = get_embedding_using_sagemaker() 
@@ -672,7 +673,8 @@ def getResponse(connectionId, jsonBody):
                 
             vector_db = Milvus.from_documents(
                 docs,
-                embeddings
+                embeddings,
+                connection_args={"uri": URI},
             )
 
             # summay 
