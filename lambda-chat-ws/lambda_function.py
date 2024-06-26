@@ -618,7 +618,7 @@ def getResponse(connectionId, jsonBody):
                     print('relevant_docs: ', relevant_docs)
                 else:
                     top_k = 4
-                    relevant_docs = vectorstore_confidence.similarity_search_with_score(
+                    relevant_docs = vector_db.similarity_search_with_score(
                         query=revised_question,
                         k=top_k
                     )
