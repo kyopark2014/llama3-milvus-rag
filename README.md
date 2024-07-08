@@ -1,4 +1,4 @@
-# Llama3 RAG 
+# Llama3 Milvus RAG (Serverless로 Milvus 구현하다가 실패)
 
 여기서는 Milvus knowledge store와 GPT-J embedding을 이용해 RAG를 구현합니다.
 
